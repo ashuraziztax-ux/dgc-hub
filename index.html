@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>DGC Hub</title>
+<style>
+  :root{ --bg:#0e1116; --card:#161b22; --card2:#1c232c; --line:#2a323d; --text:#e6edf3; --dim:#8b97a6; --accent:#58a6ff; --out:#f85149; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:32px 18px}
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .sub{color:var(--dim);font-size:14px;margin-bottom:28px}
+  .signout{background:none;border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer}
+  .signout:hover{border-color:var(--accent);color:var(--text)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+  .tile{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;transition:.12s;cursor:pointer}
+  .tile:hover{border-color:var(--accent);transform:translateY(-2px);background:var(--card2)}
+  .tile .emoji{font-size:34px;display:block;margin-bottom:12px}
+  .tile .nm{font-size:17px;font-weight:700}
+  .tile .ds{font-size:13px;color:var(--dim);margin-top:4px;line-height:1.4}
+  .tile .go{font-size:12px;color:var(--accent);margin-top:12px;font-weight:600}
+
+  .lockscreen{position:fixed;inset:0;background:#0e1116;z-index:9999;display:flex;align-items:center;justify-content:center}
+  .lockbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px;width:320px;text-align:center}
+  .lockbox .lt{font-size:24px;font-weight:800;margin-bottom:4px}
+  .lockbox .ls{font-size:13px;color:var(--dim);margin-bottom:18px}
+  .lockbox input{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:12px;font-size:16px;margin-bottom:10px}
+  .lockbox input:focus{outline:none;border-color:var(--accent)}
+  .lockbox button{width:100%;background:var(--accent);color:#0b0f14;border:none;border-radius:9px;padding:12px;font-weight:700;font-size:15px;cursor:pointer}
+  .pwerr{color:var(--out);font-size:12px;margin-top:8px;min-height:14px}
+</style>
+</head>
+<body>
+  <div id="lock" class="lockscreen">
+    <div class="lockbox">
+      <div class="lt">🔥 DGC</div>
+      <div class="ls">Sign in to your apps</div>
+      <input id="email" type="email" placeholder="Email" autocomplete="username" autofocus>
+      <input id="pw" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
+      <button onclick="signIn()">Sign in</button>
+      <div class="pwerr" id="pwerr"></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="top">
+      <h1>DGC Apps</h1>
+      <button class="signout" onclick="signOut()">Sign out</button>
+    </div>
+    <div class="sub">Everything in one place. Tap an app to open it.</div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+<script>
+const KEY="AIzaSyCPuh1-EdNqzl4rHa5hcPJV_djZwU4Zxis";
+const APPS=[
+  {emoji:"💷", nm:"Cash Flow", ds:"Live shared budget & timeline", url:"https://ashuraziztax-ux.github.io/dgc-budget/"},
+  {emoji:"🎙️", nm:"DGC Voice", ds:"Voice notes & dictation", url:"https://ashuraziztax-ux.github.io/dgc-voice/"},
+  {emoji:"🏗️", nm:"Ballasalla", ds:"BA4 project tools", url:"https://ashuraziztax-ux.github.io/dgc-ballasalla/"},
+  {emoji:"🎲", nm:"Tarmac Monopoly", ds:"", url:"https://ashuraziztax-ux.github.io/tarmac-monopoly/"}
+];
+
+function renderTiles(){
+  document.getElementById("grid").innerHTML = APPS.map(a=>`
+    <a class="tile" href="${a.url}" target="_blank" rel="noopener">
+      <span class="emoji">${a.emoji}</span>
+      <div class="nm">${a.nm}</div>
+      <div class="ds">${a.ds||""}</div>
+      <div class="go">Open →</div>
+    </a>`).join("");
+}
+function setTokens(id,rt,exp){ localStorage.setItem("dgc_auth",JSON.stringify({idToken:id,refreshTok:rt,tokExp:Date.now()+((parseInt(exp)||3600)*1000)})); }
+async function signIn(){
+  const email=document.getElementById("email").value.trim(), pw=document.getElementById("pw").value, err=document.getElementById("pwerr");
+  if(!email||!pw){ err.textContent="Enter your email and password."; return; }
+  err.textContent="Signing in…";
+  try{
+    const r=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pw,returnSecureToken:true})});
+    const d=await r.json();
+    if(d.idToken){ setTokens(d.idToken,d.refreshToken,d.expiresIn); document.getElementById("lock").style.display="none"; }
+    else { err.textContent="Wrong email or password."; }
+  }catch(e){ err.textContent="Couldn't sign in — check your connection."; }
+}
+function signOut(){ localStorage.removeItem("dgc_auth"); location.reload(); }
+function tryAutoLogin(){
+  try{ const a=JSON.parse(localStorage.getItem("dgc_auth")); if(a && a.refreshTok){ document.getElementById("lock").style.display="none"; } }catch(e){}
+}
+renderTiles(); tryAutoLogin();
+</script>
+</body>
+</html>
