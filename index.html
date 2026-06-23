@@ -33,6 +33,8 @@
   .lockbox input:focus{outline:none;border-color:var(--accent)}
   .lockbox button{width:100%;background:var(--accent);color:#0b0f14;border:none;border-radius:9px;padding:12px;font-weight:700;font-size:15px;cursor:pointer}
   .pwerr{color:var(--out);font-size:12px;margin-top:8px;min-height:14px}
+  .updbar{position:fixed;left:0;right:0;bottom:0;background:var(--accent);color:#0b0f14;font-weight:700;font-size:14px;padding:13px 16px;text-align:center;z-index:10000;box-shadow:0 -2px 12px rgba(0,0,0,.4)}
+  .updbar button{margin-left:10px;background:#0b0f14;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:13px}
 </style>
 </head>
 <body>
@@ -90,7 +92,17 @@ function signOut(){ localStorage.removeItem("dgc_auth"); location.reload(); }
 function tryAutoLogin(){
   try{ const a=JSON.parse(localStorage.getItem("dgc_auth")); if(a && a.refreshTok){ document.getElementById("lock").style.display="none"; } }catch(e){}
 }
+const HUB_VERSION="h1";
+let updateShown=false;
+function checkForUpdate(){
+  fetch("version.txt?t="+new Date().getTime(),{cache:"no-store"}).then(r=>r.ok?r.text():null).then(v=>{
+    if(v){ v=v.trim(); if(v && v!==HUB_VERSION && !updateShown){ updateShown=true; showUpdateBar(); } }
+  }).catch(()=>{});
+}
+function showUpdateBar(){ if(document.getElementById("updbar"))return; const b=document.createElement("div"); b.id="updbar"; b.className="updbar"; b.innerHTML='🔄 A new version is ready. <button id="updbtn">Update now</button>'; document.body.appendChild(b); document.getElementById("updbtn").onclick=function(){ location.replace(location.pathname+"?v="+new Date().getTime()); }; }
+
 renderTiles(); tryAutoLogin();
+checkForUpdate(); setInterval(checkForUpdate,30000);
 </script>
 </body>
 </html>
