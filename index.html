@@ -76,6 +76,10 @@ function renderTiles(){
       <div class="go">Open →</div>
     </a>`).join("");
 }
+const FULL=["ash@dgc.im","harry@dgc.im","ash@silverdale.im"];   // full-access users; everyone else = cashflow only
+const BUDGET_URL="https://ashuraziztax-ux.github.io/dgc-budget/";
+function emailFromTok(t){ try{ return (JSON.parse(atob((t.split('.')[1]||'').replace(/-/g,'+').replace(/_/g,'/'))).email||'').toLowerCase(); }catch(e){ return ''; } }
+function isFull(a){ return !!(a && FULL.indexOf(emailFromTok(a.idToken))>=0); }
 function setTokens(id,rt,exp){ localStorage.setItem("dgc_auth",JSON.stringify({idToken:id,refreshTok:rt,tokExp:Date.now()+((parseInt(exp)||3600)*1000)})); }
 async function signIn(){
   const email=document.getElementById("email").value.trim(), pw=document.getElementById("pw").value, err=document.getElementById("pwerr");
@@ -84,15 +88,15 @@ async function signIn(){
   try{
     const r=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pw,returnSecureToken:true})});
     const d=await r.json();
-    if(d.idToken){ setTokens(d.idToken,d.refreshToken,d.expiresIn); document.getElementById("lock").style.display="none"; }
+    if(d.idToken){ setTokens(d.idToken,d.refreshToken,d.expiresIn); if(FULL.indexOf((d.email||'').toLowerCase())<0){ location.replace(BUDGET_URL); return; } document.getElementById("lock").style.display="none"; }
     else { err.textContent="Wrong email or password."; }
   }catch(e){ err.textContent="Couldn't sign in — check your connection."; }
 }
 function signOut(){ localStorage.removeItem("dgc_auth"); location.reload(); }
 function tryAutoLogin(){
-  try{ const a=JSON.parse(localStorage.getItem("dgc_auth")); if(a && a.refreshTok){ document.getElementById("lock").style.display="none"; } }catch(e){}
+  try{ const a=JSON.parse(localStorage.getItem("dgc_auth")); if(a && a.refreshTok){ if(!isFull(a)){ location.replace(BUDGET_URL); return; } document.getElementById("lock").style.display="none"; } }catch(e){}
 }
-const HUB_VERSION="h1";
+const HUB_VERSION="h2";
 let updateShown=false;
 function checkForUpdate(){
   fetch("version.txt?t="+new Date().getTime(),{cache:"no-store"}).then(r=>r.ok?r.text():null).then(v=>{
