@@ -64,7 +64,7 @@ const APPS=[
   {emoji:"💷", nm:"Cash Flow", ds:"Live shared budget & timeline", url:"https://ashuraziztax-ux.github.io/dgc-budget/"},
   {emoji:"🎲", nm:"Tarmac Monopoly", ds:"Confidential business plan", url:"https://ashuraziztax-ux.github.io/tarmac-monopoly/"},
   {emoji:"🏗️", nm:"BA4 Control Panel", ds:"Ballasalla Phase 4 — site control", url:"https://ashuraziztax-ux.github.io/dgc-ballasalla/control-panel.html"},
-  {emoji:"🏗️", nm:"Utmost Control Panel", ds:"KEBH — programme & payments", url:"https://ashuraziztax-ux.github.io/dgc-utmost/control-panel.html"},
+  {emoji:"🏗️", nm:"Utmost Control Panel", ds:"KEBH — programme & payments", url:"https://ashuraziztax-ux.github.io/dgc-utmost/control-panel.html?hub=1"},
   {emoji:"🎙️", nm:"DGC Voice", ds:"Tap to speak → Trello cards", url:"https://ashuraziztax-ux.github.io/dgc-voice/"}
 ];
 
@@ -89,7 +89,7 @@ async function signIn(){
   try{
     const r=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email,password:pw,returnSecureToken:true})});
     const d=await r.json();
-    if(d.idToken){ setTokens(d.idToken,d.refreshToken,d.expiresIn); if(FULL.indexOf((d.email||'').toLowerCase())<0){ location.replace(BUDGET_URL); return; } document.getElementById("lock").style.display="none"; }
+    if(d.idToken){ setTokens(d.idToken,d.refreshToken,d.expiresIn); if(FULL.indexOf((d.email||'').toLowerCase())<0){ location.replace(BUDGET_URL); return; } localStorage.setItem("dgc_hub_auth","1"); document.getElementById("lock").style.display="none"; }
     else { err.textContent="Wrong email or password."; }
   }catch(e){ err.textContent="Couldn't sign in — check your connection."; }
 }
