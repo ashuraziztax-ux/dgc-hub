@@ -66,7 +66,8 @@ const APPS=[
   {emoji:"🏗️", nm:"BA4 Control Panel", ds:"Ballasalla Phase 4 — site control", url:"https://ashuraziztax-ux.github.io/dgc-ballasalla/control-panel.html"},
   {emoji:"🏗️", nm:"Utmost Control Panel", ds:"KEBH — programme & payments", url:"https://ashuraziztax-ux.github.io/dgc-utmost/control-panel.html?hub=1"},
   {emoji:"🎙️", nm:"DGC Voice", ds:"Tap to speak → Trello cards", url:"https://ashuraziztax-ux.github.io/dgc-voice/"},
-  {emoji:"📊", nm:"Website Visitors", ds:"DGC, Manx Drain & Silverdale: who visits and how they found us", url:"https://dgc-ltd.github.io/dgc-traffic-dashboard/"}
+  {emoji:"📊", nm:"Website Visitors", ds:"DGC, Manx Drain & Silverdale: who visits and how they found us", url:"https://dgc-ltd.github.io/dgc-traffic-dashboard/"},
+  {emoji:"✉️", nm:"Silverdale Canvassing", ds:"Planning & architect leads → letters, envelopes & sent archive", url:"https://dgc-groundworks.github.io/dgc-ballasalla/silverdale-canvassing/"}
 ];
 
 function renderTiles(){
@@ -98,7 +99,7 @@ function signOut(){ localStorage.removeItem("dgc_auth"); location.reload(); }
 function tryAutoLogin(){
   try{ const a=JSON.parse(localStorage.getItem("dgc_auth")); if(a && a.refreshTok){ if(!isFull(a)){ location.replace(BUDGET_URL); return; } document.getElementById("lock").style.display="none"; } }catch(e){}
 }
-const HUB_VERSION="h3";
+const HUB_VERSION="h4";
 let updateShown=false;
 function checkForUpdate(){
   fetch("version.txt?t="+new Date().getTime(),{cache:"no-store"}).then(r=>r.ok?r.text():null).then(v=>{
