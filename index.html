@@ -9,6 +9,8 @@
 <title>DGC Hub</title>
 <style>
   :root{ --bg:#0e1116; --card:#161b22; --card2:#1c232c; --line:#2a323d; --text:#e6edf3; --dim:#8b97a6; --accent:#58a6ff; --out:#f85149; }
+  [data-theme="light"]{ --bg:#f2f4f7; --card:#ffffff; --card2:#eef1f5; --line:#d7dce3; --text:#111418; --dim:#5c6672; --accent:#0969da; --out:#cf222e; }
+  html{background:var(--bg)}
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-text-size-adjust:100%}
   .wrap{max-width:920px;margin:0 auto;padding:32px 18px}
@@ -17,6 +19,9 @@
   .sub{color:var(--dim);font-size:14px;margin-bottom:28px}
   .signout{background:none;border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer}
   .signout:hover{border-color:var(--accent);color:var(--text)}
+  .top-actions{display:flex;gap:8px;align-items:center}
+  .themebtn{background:none;border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+  .themebtn:hover{border-color:var(--accent);color:var(--text)}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
   .tile{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;transition:.12s;cursor:pointer}
   .tile:hover{border-color:var(--accent);transform:translateY(-2px);background:var(--card2)}
@@ -25,7 +30,7 @@
   .tile .ds{font-size:13px;color:var(--dim);margin-top:4px;line-height:1.4}
   .tile .go{font-size:12px;color:var(--accent);margin-top:12px;font-weight:600}
 
-  .lockscreen{position:fixed;inset:0;background:#0e1116;z-index:9999;display:flex;align-items:center;justify-content:center}
+  .lockscreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
   .lockbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:34px;width:320px;text-align:center}
   .lockbox .lt{font-size:24px;font-weight:800;margin-bottom:4px}
   .lockbox .ls{font-size:13px;color:var(--dim);margin-bottom:18px}
@@ -52,13 +57,20 @@
   <div class="wrap">
     <div class="top">
       <h1>DGC Apps</h1>
-      <button class="signout" onclick="signOut()">Sign out</button>
+      <div class="top-actions">
+        <button class="themebtn" id="themeBtn" onclick="toggleTheme()">Light mode</button>
+        <button class="signout" onclick="signOut()">Sign out</button>
+      </div>
     </div>
     <div class="sub">Everything in one place. Tap an app to open it.</div>
     <div class="grid" id="grid"></div>
   </div>
 
 <script>
+const THEME_KEY="dgc_hub_theme";
+function applyTheme(t){ document.documentElement.setAttribute("data-theme",t); const b=document.getElementById("themeBtn"); if(b) b.textContent = t==="light" ? "Dark mode" : "Light mode"; }
+function toggleTheme(){ const next = document.documentElement.getAttribute("data-theme")==="light" ? "dark" : "light"; applyTheme(next); try{ localStorage.setItem(THEME_KEY,next); }catch(e){} }
+(function initTheme(){ let saved="dark"; try{ saved=localStorage.getItem(THEME_KEY)||"dark"; }catch(e){} applyTheme(saved); })();
 const KEY="AIzaSyCPuh1-EdNqzl4rHa5hcPJV_djZwU4Zxis";
 const APPS=[
   {emoji:"💷", nm:"Cash Flow", ds:"Live shared budget & timeline", url:"https://ashuraziztax-ux.github.io/dgc-budget/"},
@@ -99,7 +111,7 @@ function signOut(){ localStorage.removeItem("dgc_auth"); location.reload(); }
 function tryAutoLogin(){
   try{ const a=JSON.parse(localStorage.getItem("dgc_auth")); if(a && a.refreshTok){ if(!isFull(a)){ location.replace(BUDGET_URL); return; } document.getElementById("lock").style.display="none"; } }catch(e){}
 }
-const HUB_VERSION="h4";
+const HUB_VERSION="h5";
 let updateShown=false;
 function checkForUpdate(){
   fetch("version.txt?t="+new Date().getTime(),{cache:"no-store"}).then(r=>r.ok?r.text():null).then(v=>{
